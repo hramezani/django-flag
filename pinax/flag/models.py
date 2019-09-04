@@ -4,10 +4,10 @@ from django.conf import settings
 from django.db import models
 
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.utils.translation import ugettext_lazy as _
 
-from flag import signals
+from pinax.flag import signals
 
 
 STATUS = getattr(settings, "FLAG_STATUSES", [
@@ -21,17 +21,22 @@ STATUS = getattr(settings, "FLAG_STATUSES", [
 
 class FlaggedContent(models.Model):
 
-    content_type = models.ForeignKey(ContentType)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
-    content_object = generic.GenericForeignKey("content_type", "object_id")
+    content_object = GenericForeignKey("content_type", "object_id")
     # user who created flagged content -- this is kept in model so it outlives content
-    creator = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="flagged_content")
+    creator = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name="flagged_content",
+        on_delete=models.CASCADE
+    )
     status = models.CharField(max_length=1, choices=STATUS, default="1")
     # moderator responsible for last status change
     moderator = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,
-        related_name="moderated_content"
+        related_name="moderated_content",
+        on_delete=models.CASCADE
     )
     count = models.PositiveIntegerField(default=1)
 
@@ -41,8 +46,9 @@ class FlaggedContent(models.Model):
 
 class FlagInstance(models.Model):
 
-    flagged_content = models.ForeignKey(FlaggedContent)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL)  # user flagging the content
+    flagged_content = models.ForeignKey(FlaggedContent, on_delete=models.CASCADE)
+    # user flagging the content
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     when_added = models.DateTimeField(default=datetime.now)
     when_recalled = models.DateTimeField(null=True)  # if recalled at all
     comment = models.TextField()  # comment by the flagger

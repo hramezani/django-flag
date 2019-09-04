@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from flag.models import FlaggedContent, FlagInstance
+from pinax.flag.models import FlaggedContent, FlagInstance
 
 
 class InlineFlagInstance(admin.TabularInline):

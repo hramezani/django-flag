@@ -2,6 +2,7 @@
 from django.conf.urls import patterns, url
 from django.views.generic import TemplateView
 
+app_name = "pinax_flag"
 
 urlpatterns = patterns("",
     url(r"^$", "flag.views.flag", name="flag"),
